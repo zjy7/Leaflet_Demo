@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>pip</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="./lib/Flat-UI-master/dist/css/vendor/bootstrap/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="./lib/Flat-UI-master/dist/css/flat-ui.min.css">
+    <link rel="stylesheet" href="./lib/leaflet/leaflet.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-embossed" role="navigation" style=" display:none; margin-bottom: 0; border-radius: 0; z-index:2">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-01">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+            <a class="navbar-brand" href="#">Flat UI</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-collapse-01">
+            <ul class="nav navbar-nav navbar-left">
+                <li>
+                    <a href="#fakelink">绘制元素
+                        <span class="navbar-unread">1</span>
+                    </a>
+                </li>
+                 <li>
+                <a href="JavaScript:void(0)" onclick="createCircle()">circle</a>
+                </li>
+                <li>
+                    <a href="JavaScript:void(0)" onclick="createMarker()">marker</a>
+                </li>
+                <li>
+                    <a href="JavaScript:void(0)" onclick="createSelfMarker()">custom marker</a>
+                </li>
+                <li>
+                    <a href="JavaScript:void(0)" onclick="createPolyline()">polyline</a>
+                </li>
+                <li>
+                    <a href="JavaScript:void(0)" onclick="createPolygon()">polygon</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12" id="mapDiv" style="position: absolute;top: 0;bottom: 0;z-index:1"></div>
+            <!-- 地图面板 -->
+            <!--底部状态栏部分 -->
+        </div>
+    </div>
+</body>
+<script src="./lib/Flat-UI-master/dist/js/vendor/jquery.min.js"></script>
+<script src="./lib/Flat-UI-master/dist/js/flat-ui.js"></script>
+<script src="./lib/leaflet/leaflet.js"></script>
+<script src="./js/urlTemplate.js"></script>
+<script src="https://unpkg.com/@mapbox/leaflet-pip@1.1.0/leaflet-pip.js"></script>
+<script>
+    const map = L.map("mapDiv", {
+        crs: L.CRS.EPSG3857,
+        zoomControl: true,
+        minZoom: 1,
+        attributionControl: true,
+        zoomAnimation: false //缩放是否带动画
+    }).setView([36.52, 120.31], 8);
+    let Baselayer = L.tileLayer(urlTemplate.mapbox_url, {
+        maxZoom: 18,
+        id: 'mapbox.streets',
+    }).addTo(map);
+
+
+    // 画一个circle
+    const createCircle = () => {
+        const circle = L.circle([36.52, 120.31], {
+            color: 'green', //描边色
+            fillColor: '#f03',  //填充色
+            fillOpacity: 0.5, //透明度
+            radius: 10000 //半径，单位米
+        }).addTo(map);
+        // 绑定一个提示标签
+        circle.bindTooltip('我是个圆');
+        map.fitBounds(circle.getBounds());
+    }
+
+    // 画一个polygon
+    let lls = [[37, -109.05], [41, -109.03], [41, -102.05], [37, -102.04]]
+    let lls2 = []
+    for(let i=0;i<lls.length;i++){
+      lls2.push([lls[i][1],lls[i][0]])
+    }
+    const createPolygon = () => {
+        const polygon = L.polygon(lls, {
+                color: '#000',
+                fillColor: '#eee',
+                fillOpacity: 0.5
+            }).addTo(map);
+        // 绑定一个提示标签
+        //polygon.bindTooltip('this is 个多边形');
+        // 飞到这个多边形的位置
+        map.fitBounds(polygon.getBounds());
+    }
+    createPolygon()
+    // 绑定一个监听事件
+
+    map.on('click', function (e) {
+      debugger
+      //console.log(e.latlng)
+      let p = {
+        features:[{
+          type: "Feature",
+          properties: {name: "", id: ""},
+          geometry: {
+            type: "Polygon",
+            coordinates: [lls2]
+          }
+        }],
+        type: "FeatureCollection"
+      };
+      let gjLayer = L.geoJson(p);
+      //console.log(gjLayer)
+      let results = leafletPip.pointInLayer([e.latlng.lng,e.latlng.lat], gjLayer);
+      if (results.length > 0) {
+        console.log(`iiiiiiiiiiiiin`)
+      }
+      else {
+        console.log(`outtttttttt`)
+      }
+    })
+
+
+</script>
+
+</html>
